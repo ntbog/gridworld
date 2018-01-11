@@ -1,5 +1,5 @@
 from __future__ import print_function
-#Use priortiy queues from Python library, don't waste time implementing your own
+#Use priority queues from Python libraries, don't waste time implementing your own
 #Check https://docs.python.org/2/library/heapq.html
 from heapq import *
 
@@ -52,7 +52,7 @@ class Agent:
             print("no path")
             return
         current = self.frontier.pop()
-        print("poped: ", current)
+        print("popped: ", current)
         #...
         self.grid.nodes[current[0]][current[1]].checked = True
         self.grid.nodes[current[0]][current[1]].frontier = False

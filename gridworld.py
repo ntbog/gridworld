@@ -105,7 +105,6 @@ class Grid:
             for node in col:
                 node.update()
                 node.draw(self.game.screen)
-        #Uncomment below to draw lines
         for i in range(self.length):
             pygame.draw.line(self.game.screen, [100]*3, (15*i, 45), (15*i, 750))
         for i in range(self.width):
