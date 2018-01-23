@@ -92,7 +92,7 @@ class Grid:
         self.width = int((self.game.screen_res[1]/15)-3)
         self.nodes = [[Node(self, [row, col+3]) for row in range(self.length)] for col in range(self.width)]
         self.row_range = self.length-3
-        self.col_range = self.width
+        self.col_range = self.width+3
         self.start = (3,3)
         self.goal = (self.length-7, self.width-1)
     def random(self):

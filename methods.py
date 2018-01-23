@@ -22,13 +22,20 @@ class Agent:
             self.frontier = [self.start]
             self.checked = []
         elif self.type == "bfs":
-            pass
+            self.frontier = [self.start]
+            self.checked = []
         elif self.type == "ucs":
+            self.frontier = []
+            self.checked = []
+            self.gdict = {self.start: 0}
+            heappush(self.frontier, (0, self.start))
             #[Hint] you need a dictionary that keeps track of cost
             #[Hint] you probably also need something like this: heappush(self.frontier, (0, self.start))
-            pass
         elif self.type == "astar":
-            pass
+            self.frontier = []
+            self.checked = []
+            self.gdict = {self.start: 0}
+            heappush(self.frontier, (0, self.start))
     def show_result(self):
         current = self.goal
         while not current == self.start:
