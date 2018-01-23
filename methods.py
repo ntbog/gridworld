@@ -94,7 +94,46 @@ class Agent:
             else:
                 print("out of row range: ", nextstep)
     def bfs_step(self):
-        pass
+                #...
+        if not self.frontier:
+            self.failed = True
+            print("no path")
+            return
+        current = self.frontier.pop()
+        print("popped: ", current)
+        #...
+        self.grid.nodes[current[0]][current[1]].checked = True
+        self.grid.nodes[current[0]][current[1]].frontier = False
+        self.checked.append(current)
+        #...
+        for i, j in self.actions:
+            #...
+            nextstep = (current[0]+i, current[1]+j)
+            #...
+            #See what happens if you disable this check here
+            if nextstep in self.checked or nextstep in self.frontier:
+                print("expanded before: ", nextstep)
+                continue
+            #...
+            if 0 <= nextstep[0] < self.grid.row_range:
+                if 0 <= nextstep[1] < self.grid.col_range:
+                    #...
+                    if not self.grid.nodes[nextstep[0]][nextstep[1]].puddle:
+                        if nextstep == self.goal:
+                            self.finished = True
+                        #...
+                        self.frontier.append(nextstep)
+                        #...
+                        self.grid.nodes[nextstep[0]][nextstep[1]].frontier = True
+                        #...
+                        self.came_from[nextstep] = current
+                        print("pushed: ", nextstep)
+                    else:
+                        print("puddle at: ", nextstep)
+                else:
+                    print("out of column range: ", nextstep)
+            else:
+                print("out of row range: ", nextstep)
     def ucs_step(self):
         #[Hint] you can get the cost of a node by node.cost()
         pass
