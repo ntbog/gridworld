@@ -99,9 +99,8 @@ class Agent:
             self.finished = True
             print("no path")
             return
-        current = heappop(self.frontier)[1]
-        cost = self.gdict[current]
-        print("popped: ", current, "cost: ", cost)
+        current = self.frontier.pop()
+        print("popped: ", current)
         #... keep track
         self.grid.nodes[current[0]][current[1]].checked = True
         self.grid.nodes[current[0]][current[1]].frontier = False
