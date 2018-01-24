@@ -1,3 +1,6 @@
+Boolean Nguyen
+A12475550
+
 Assignment 1: Grid World
 =========
 

@@ -68,7 +68,7 @@ class Agent:
         for i, j in self.actions:
             #... tests the 4 action relative to current
             nextstep = (current[0]+i, current[1]+j)
-            #... prevent from visiting again
+            #... prevent revisiting
             #See what happens if you disable this check here
             if nextstep in self.checked or nextstep in self.frontier:
                 print("expanded before: ", nextstep)
@@ -82,9 +82,9 @@ class Agent:
                             self.finished = True
                         #... add to the frontier which will be traversed to eventually
                         self.frontier.append(nextstep)
-                        #... 
+                        #... book keeping
                         self.grid.nodes[nextstep[0]][nextstep[1]].frontier = True
-                        #...
+                        #... book keeping
                         self.came_from[nextstep] = current
                         print("pushed: ", nextstep)
                     else:
@@ -94,7 +94,7 @@ class Agent:
             else:
                 print("out of row range: ", nextstep)
     def bfs_step(self):
-        #... see if it ran out of options
+        #... finished instead of failed
         if not self.frontier:
             self.finished = True
             print("no path")
@@ -121,11 +121,9 @@ class Agent:
                     if not self.grid.nodes[nextstep[0]][nextstep[1]].puddle:
                         if nextstep == self.goal:
                             self.finished = True
-                        #...
+                        #... insert a pair this time
                         self.frontier.insert(0, nextstep)
-                        #...
                         self.grid.nodes[nextstep[0]][nextstep[1]].frontier = True
-                        #...
                         self.came_from[nextstep] = current
                         print("pushed: ", nextstep)
                     else:
@@ -141,8 +139,9 @@ class Agent:
             self.finished = True
             print("no path")
             return
-        current = self.frontier.pop()
-        print("popped: ", current)
+        current = heappop(self.frontier)[1]
+        current_cost = self.gdict[current]
+        print("popped: ", current, " cost: ", current_cost)
         #... keep track
         self.grid.nodes[current[0]][current[1]].checked = True
         self.grid.nodes[current[0]][current[1]].frontier = False
@@ -153,23 +152,30 @@ class Agent:
             nextstep = (current[0]+i, current[1]+j)
             #... prevent from visiting again
             #See what happens if you disable this check here
-            if nextstep in self.checked or nextstep in self.frontier:
-                print("expanded before: ", nextstep)
-                continue
+            #if nextstep in self.checked or nextstep in self.frontier:
+            #    print("expanded before: ", nextstep)
+            #    continue
             #... check if it's in boundaries of the grid
             if 0 <= nextstep[0] < self.grid.row_range:
                 if 0 <= nextstep[1] < self.grid.col_range:
                     #... check if puddle
                     if not self.grid.nodes[nextstep[0]][nextstep[1]].puddle:
-                        if nextstep == self.goal:
-                            self.finished = True
-                        #...
-                        self.frontier.insert(0, nextstep)
-                        #...
-                        self.grid.nodes[nextstep[0]][nextstep[1]].frontier = True
-                        #...
-                        self.came_from[nextstep] = current
-                        print("pushed: ", nextstep)
+                        if not nextstep in self.checked:
+                            if nextstep == self.goal:
+                                self.finished = True
+                            #   keeping track of cost
+                            #   typical UCS expands on the lowest cost
+                            next_cost = current_cost + self.grid.nodes[nextstep[0]][nextstep[1]].cost()
+                            self.gdict[nextstep] = next_cost
+                            if not (next_cost, nextstep) in self.frontier:
+                                heappush(self.frontier, (self.gdict[nextstep],nextstep))
+                                self.grid.nodes[nextstep[0]][nextstep[1]].frontier = True
+                                self.came_from[nextstep] = current
+                                print("pushed: ", nextstep)
+                            else:
+                                print("expanded before: ", nextstep)
+                        else:
+                            print("checked before: ", nextstep)
                     else:
                         print("puddle at: ", nextstep)
                 else:
@@ -177,5 +183,58 @@ class Agent:
             else:
                 print("out of row range: ", nextstep)
     #[Hint] you need to declare a heuristic function for Astar
+    def h_val(self, a, b):
+        c = abs(a[0] - b[0])
+        d = abs(a[1] - b[1])
+        # return can be multiplied for faster but less exhaustive search
+        return (c + d)
     def astar_step(self):
-        pass
+        #[Hint] you can get the cost of a node by node.cost()
+        #... see if it ran out of options
+        if not self.frontier:
+            self.finished = True
+            print("no path")
+            return
+        current = heappop(self.frontier)[1]
+        current_cost = self.gdict[current]
+        print("popped: ", current, " cost: ", current_cost)
+        #... keep track
+        self.grid.nodes[current[0]][current[1]].checked = True
+        self.grid.nodes[current[0]][current[1]].frontier = False
+        self.checked.append(current)
+        #... loop through possible next step
+        for i, j in self.actions:
+            #... tests the 4 action relative to current
+            nextstep = (current[0]+i, current[1]+j)
+            #... prevent from visiting again
+            #See what happens if you disable this check here
+            #if nextstep in self.checked or nextstep in self.frontier:
+            #    print("expanded before: ", nextstep)
+            #    continue
+            #... check if it's in boundaries of the grid
+            if 0 <= nextstep[0] < self.grid.row_range:
+                if 0 <= nextstep[1] < self.grid.col_range:
+                    #... check if puddle
+                    if not self.grid.nodes[nextstep[0]][nextstep[1]].puddle:
+                        if not nextstep in self.checked:
+                            if nextstep == self.goal:
+                                self.finished = True
+                            next_cost = current_cost + self.grid.nodes[nextstep[0]][nextstep[1]].cost()
+                            self.gdict[nextstep] = next_cost
+                            #   the big difference vs just UCS is the heuristic value adding onto the cost
+                            if not (next_cost + self.h_val(self.goal,nextstep), nextstep) in self.frontier:
+                                #   also seen here
+                                heappush(self.frontier, (next_cost + self.h_val(self.goal,nextstep), nextstep))
+                                self.grid.nodes[nextstep[0]][nextstep[1]].frontier = True
+                                self.came_from[nextstep] = current
+                                print("pushed: ", nextstep)
+                            else:
+                                print("expanded before: ", nextstep)
+                        else:
+                            print("checked before: ", nextstep)
+                    else:
+                        print("puddle at: ", nextstep)
+                else:
+                    print("out of column range: ", nextstep)
+            else:
+                print("out of row range: ", nextstep)
